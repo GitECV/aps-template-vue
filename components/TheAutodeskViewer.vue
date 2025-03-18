@@ -30,8 +30,7 @@ onMounted(() => {
           const data = await $fetch(`/api/autodesk/auth`, {
             method: "POST",
           });
-          const newToken = await data;
-          onSuccess(newToken, expiresIn);
+          onSuccess(data, expiresIn);
         } catch (error) {
           showError({ ...error.response._data });
         }
@@ -40,16 +39,12 @@ onMounted(() => {
 
     Autodesk.Viewing.Initializer(options, () => {
       const viewerContainer = document.getElementById("viewer-container");
-      const config = {
-        markupDisableHotkeys: true,
-      };
-
-      viewer = new Autodesk.Viewing.GuiViewer3D(viewerContainer, config);
-      viewer.start(config);
+      viewer = new Autodesk.Viewing.GuiViewer3D(viewerContainer);
+      viewer.start();
       globalViewer = viewer;
 
       // TODO - Añadir la urn de un modelo subido a US
-      const documentId = `urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==`;
+      const documentId = `urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9Tbm93ZG9uJTIwVG93ZXJzJTIwU2FtcGxlJTIwSFZBQy5ydnQ=`;
       Autodesk.Viewing.Document.load(
         documentId,
         onDocumentLoadSuccess,
