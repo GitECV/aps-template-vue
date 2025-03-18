@@ -49,12 +49,19 @@ onMounted(() => {
       globalViewer = viewer;
 
       // TODO - Añadir la urn de un modelo subido a US
+      const urnArray = ['dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==',
+        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9Tbm93ZG9uK1Rvd2VycytTYW1wbGUrSFZBQy5ydnQ=',
+        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9Tbm93ZG9uK1Rvd2VycytTYW1wbGUrRWxlY3RyaWNhbC5ydnQ='
+      ]
       const documentId = `urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==`;
-      Autodesk.Viewing.Document.load(
-        documentId,
-        onDocumentLoadSuccess,
-        onDocumentLoadFailure
-      );
+      urnArray.forEach((urn) => {
+        const documentId = `urn:${urn}`;
+        Autodesk.Viewing.Document.load(
+          documentId,
+          onDocumentLoadSuccess,
+          onDocumentLoadFailure
+        );
+      });
     });
 
     const onDocumentLoadSuccess = (doc) => {
