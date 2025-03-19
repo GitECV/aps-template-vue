@@ -1,5 +1,5 @@
 <template>
-  <TheLateralMenu @enviar-objeto="getSelectedTreeObject" />
+  <TheLateralMenu @send-object="getSelectedTreeObject" />
   <TheAutodeskViewer ref="autodeskViewer" />
 </template>
 

@@ -61,10 +61,10 @@ const objectTree = {
   ],
 };
 
-const emit = defineEmits(["enviar-objeto"]);
+const emit = defineEmits(["send-object"]);
 
 const handleSelectionChange = (object) => {
-  emit("enviar-objeto", object);
+  emit("send-object", object);
 };
 </script>
 
