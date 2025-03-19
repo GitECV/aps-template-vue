@@ -17,6 +17,7 @@ useHead({
   ],
 });
 let globalViewer;
+let modelo;
 
 onMounted(() => {
   let viewer = null;
@@ -143,9 +144,11 @@ const createBaseExtension = () => {
       return true;
     }
     async onModelLoaded(model) {
+      modelo = model;
+      // TODO - Aquí está el tree del modelo
       const tree = await this.getModelStructure(model);
-      // console.log("Model Object Tree: ", tree);
-      // console.log("ESTE ES EL MODEL: ", model);
+      // Eliminamos el elemento
+      this.viewer.toolbar.getControl('settingsTools').removeControl('toolbar-modelStructureTool');
     }
 
     async getModelStructure(model) {
@@ -185,10 +188,27 @@ const createBaseExtension = () => {
         .removeControl("toolbar-bimWalkTool");
     }
 
+    // TODO - Conseguir el model
+    selectDbId(dbid) {
+        modelo.getObjectTree((tree) => {
+            const dbidsToSelect = [dbid];
+            tree.enumNodeChildren(dbid, (childId) => {
+                dbidsToSelect.push(childId);
+            }, true);
+            this.viewer.select(dbidsToSelect);
+            this.viewer.fitToView(dbidsToSelect);
+            // this.viewer.isolate(dbidsToSelect);
+            dbidsToSelect.forEach((id) => {
+                this.viewer.impl.highlightObjectNode(modelo, id, true);
+            });
+        }, (error) => {
+            console.error('Error retrieving object tree:', error);
+        });
+    }
+
     sacaElConsoleLog(id) {
-      this.viewer.select([id]);
-      this.viewer.fitToView([id]);
-      this.viewer.isolate([id]);
+      // TODO - Comprobar si ese id tiene mas nodos hijo y añadirlos a un array para que seleccione todo
+      this.selectDbId(id)
     }
   }
 
