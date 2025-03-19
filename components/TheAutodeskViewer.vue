@@ -144,11 +144,36 @@ const createBaseExtension = () => {
       return true;
     }
     async onModelLoaded(model) {
-      // this.overrideFirstPersonButtonAction()
-      // const tree = await this.getModelStructure(model);
-      // console.log("Model Object Tree: ", tree);
-      this.removeFirstPersonButton();
+      const tree = await this.getModelStructure(model);
+      console.log("Model Object Tree: ", tree);
       console.log("ESTE ES EL MODEL: ", model);
+    }
+
+    async getModelStructure(model) {
+      return new Promise((resolve, reject) => {
+        model.getObjectTree((tree) => {
+          const buildStructure = (nodeId) => {
+            const node = {
+              objectid: nodeId,
+              name: tree.getNodeName(nodeId),
+              objects: [],
+            };
+            tree.enumNodeChildren(nodeId, (childId) => {
+              const childNode = buildStructure(childId);
+              if (tree.getChildCount(childId) > 0) {
+                tree.enumNodeChildren(childId, (grandChildId) => {
+                  childNode.objects.push(buildStructure(grandChildId));
+                });
+              }
+              node.objects.push(childNode);
+            });
+            return node;
+          };
+          const rootId = tree.getRootId();
+          const structure = buildStructure(rootId);
+          resolve(structure); // Return the entire structure including the root node
+        }, reject);
+      });
     }
 
     onSelectionChanged(model, dbids) {}
