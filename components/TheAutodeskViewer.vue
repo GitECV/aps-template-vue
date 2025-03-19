@@ -16,7 +16,6 @@ useHead({
     },
   ],
 });
-
 let globalViewer;
 
 onMounted(() => {
@@ -145,8 +144,8 @@ const createBaseExtension = () => {
     }
     async onModelLoaded(model) {
       const tree = await this.getModelStructure(model);
-      console.log("Model Object Tree: ", tree);
-      console.log("ESTE ES EL MODEL: ", model);
+      // console.log("Model Object Tree: ", tree);
+      // console.log("ESTE ES EL MODEL: ", model);
     }
 
     async getModelStructure(model) {
@@ -185,6 +184,12 @@ const createBaseExtension = () => {
         .getControl("navTools")
         .removeControl("toolbar-bimWalkTool");
     }
+
+    sacaElConsoleLog(id) {
+      this.viewer.select([id]);
+      this.viewer.fitToView([id]);
+      this.viewer.isolate([id]);
+    }
   }
 
   window.Autodesk.Viewing.theExtensionManager.registerExtension(
@@ -192,6 +197,17 @@ const createBaseExtension = () => {
     BaseExtension
   );
 };
+
+const sendTreeObject = (object) => {
+  if (globalViewer) {
+    const extension = globalViewer.getExtension("BaseExtension");
+    if (extension) {
+      extension.sacaElConsoleLog(object.objectid);
+    }
+  }
+};
+
+defineExpose({ sendTreeObject });
 </script>
 <template>
   <div id="viewer-container" class="viewer-container" />
