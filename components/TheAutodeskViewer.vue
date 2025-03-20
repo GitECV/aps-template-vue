@@ -19,6 +19,8 @@ useHead({
 let globalViewer;
 let globalModel;
 
+const emit = defineEmits(["send-autodesk-object-tree"]);
+
 onMounted(() => {
   let viewer = null;
   window.initAutodeskViewer = () => {
@@ -99,6 +101,10 @@ onMounted(() => {
   };
 });
 
+const sendAutodeskObjectTree = (objectTree) => {
+  emit("send-autodesk-object-tree", objectTree);
+};
+
 const createBaseExtension = () => {
   class BaseExtension extends window.Autodesk.Viewing.Extension {
     constructor(viewer, options) {
@@ -147,7 +153,11 @@ const createBaseExtension = () => {
       globalModel = model;
       const tree = await this.getModelStructure(model);
       // Eliminamos el botón para acceder al object tree propio del visor de APS
-      this.viewer.toolbar.getControl('settingsTools').removeControl('toolbar-modelStructureTool');
+      this.viewer.toolbar
+        .getControl("settingsTools")
+        .removeControl("toolbar-modelStructureTool");
+      // Enviamos el tree
+      sendAutodeskObjectTree(tree);
     }
 
     async getModelStructure(model) {
@@ -188,20 +198,27 @@ const createBaseExtension = () => {
     }
 
     selectDbId(dbid) {
-      globalModel.getObjectTree((tree) => {
-            const dbidsToSelect = [dbid];
-            tree.enumNodeChildren(dbid, (childId) => {
-                dbidsToSelect.push(childId);
-            }, true);
-            this.viewer.select(dbidsToSelect);
-            this.viewer.fitToView(dbidsToSelect);
-            // this.viewer.isolate(dbidsToSelect);
-            dbidsToSelect.forEach((id) => {
-                this.viewer.impl.highlightObjectNode(globalModel, id, true);
-            });
-        }, (error) => {
-            console.error('Error retrieving object tree:', error);
-        });
+      globalModel.getObjectTree(
+        (tree) => {
+          const dbidsToSelect = [dbid];
+          tree.enumNodeChildren(
+            dbid,
+            (childId) => {
+              dbidsToSelect.push(childId);
+            },
+            true
+          );
+          this.viewer.select(dbidsToSelect);
+          this.viewer.fitToView(dbidsToSelect);
+          // this.viewer.isolate(dbidsToSelect);
+          dbidsToSelect.forEach((id) => {
+            this.viewer.impl.highlightObjectNode(globalModel, id, true);
+          });
+        },
+        (error) => {
+          console.error("Error retrieving object tree:", error);
+        }
+      );
     }
   }
 
