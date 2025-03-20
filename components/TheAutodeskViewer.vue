@@ -186,10 +186,21 @@ const createBaseExtension = () => {
         }, reject);
       });
     }
+    onSelectionChanged(model, dbids) {
+      if (dbids.length === 0) {
+        this.viewer.clearSelection();
+      } else {
+        this.viewer.select(dbids);
+      }
+    }
 
-    onSelectionChanged(model, dbids) {}
-
-    onIsolationChanged(model, dbids) {}
+    onIsolationChanged(model, dbids) {
+      if (dbids.length === 0) {
+        this.viewer.clearSelection();
+      } else {
+        this.viewer.isolate(dbids);
+      }
+    }
 
     removeFirstPersonButton() {
       this.viewer.toolbar
@@ -209,8 +220,7 @@ const createBaseExtension = () => {
             true
           );
           this.viewer.select(dbidsToSelect);
-          this.viewer.fitToView(dbidsToSelect);
-          // this.viewer.isolate(dbidsToSelect);
+          this.viewer.fitToView(dbidsToSelect, this.viewer.model);
           dbidsToSelect.forEach((id) => {
             this.viewer.impl.highlightObjectNode(globalModel, id, true);
           });
