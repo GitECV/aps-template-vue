@@ -17,7 +17,7 @@ useHead({
   ],
 });
 let globalViewer;
-let modelo;
+let globalModel;
 
 onMounted(() => {
   let viewer = null;
@@ -144,10 +144,9 @@ const createBaseExtension = () => {
       return true;
     }
     async onModelLoaded(model) {
-      modelo = model;
-      // TODO - Aquí está el tree del modelo
+      globalModel = model;
       const tree = await this.getModelStructure(model);
-      // Eliminamos el elemento
+      // Eliminamos el botón para acceder al object tree propio del visor de APS
       this.viewer.toolbar.getControl('settingsTools').removeControl('toolbar-modelStructureTool');
     }
 
@@ -173,7 +172,7 @@ const createBaseExtension = () => {
           };
           const rootId = tree.getRootId();
           const structure = buildStructure(rootId);
-          resolve(structure); // Return the entire structure including the root node
+          resolve(structure);
         }, reject);
       });
     }
@@ -188,9 +187,8 @@ const createBaseExtension = () => {
         .removeControl("toolbar-bimWalkTool");
     }
 
-    // TODO - Conseguir el model
     selectDbId(dbid) {
-        modelo.getObjectTree((tree) => {
+      globalModel.getObjectTree((tree) => {
             const dbidsToSelect = [dbid];
             tree.enumNodeChildren(dbid, (childId) => {
                 dbidsToSelect.push(childId);
@@ -199,16 +197,11 @@ const createBaseExtension = () => {
             this.viewer.fitToView(dbidsToSelect);
             // this.viewer.isolate(dbidsToSelect);
             dbidsToSelect.forEach((id) => {
-                this.viewer.impl.highlightObjectNode(modelo, id, true);
+                this.viewer.impl.highlightObjectNode(globalModel, id, true);
             });
         }, (error) => {
             console.error('Error retrieving object tree:', error);
         });
-    }
-
-    sacaElConsoleLog(id) {
-      // TODO - Comprobar si ese id tiene mas nodos hijo y añadirlos a un array para que seleccione todo
-      this.selectDbId(id)
     }
   }
 
@@ -222,7 +215,7 @@ const sendTreeObject = (object) => {
   if (globalViewer) {
     const extension = globalViewer.getExtension("BaseExtension");
     if (extension) {
-      extension.sacaElConsoleLog(object.objectid);
+      extension.selectDbId(object.objectid);
     }
   }
 };
@@ -238,7 +231,7 @@ defineExpose({ sendTreeObject });
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 250px; /* Adjust this value based on your sidebar width */
+  left: 250px;
   right: 0;
   overflow: hidden;
 }

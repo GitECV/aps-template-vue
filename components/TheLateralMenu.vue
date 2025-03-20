@@ -174,10 +174,8 @@ const objectTree = {
                   name: "Flex Duct Round [1474008]",
                   objects: [],
                 },
-                // ... otros objetos
               ],
             },
-            // ... otros objetos
           ],
         },
       ],
