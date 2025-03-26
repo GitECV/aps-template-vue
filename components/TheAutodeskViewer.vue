@@ -16,12 +16,13 @@ useHead({
     },
   ],
 });
-
 let globalViewer;
+let globalModel;
 
 onMounted(() => {
   let viewer = null;
   window.initAutodeskViewer = () => {
+    createBaseExtension();
     const options = {
       env: "AutodeskProduction",
       getAccessToken: async (onSuccess) => {
@@ -30,8 +31,7 @@ onMounted(() => {
           const data = await $fetch(`/api/autodesk/auth`, {
             method: "POST",
           });
-          const newToken = await data;
-          onSuccess(newToken, expiresIn);
+          onSuccess(data, expiresIn);
         } catch (error) {
           showError({ ...error.response._data });
         }
@@ -39,30 +39,44 @@ onMounted(() => {
     };
 
     Autodesk.Viewing.Initializer(options, () => {
+      loadBaseExtension();
       const viewerContainer = document.getElementById("viewer-container");
-      const config = {
-        markupDisableHotkeys: true,
-      };
-
-      viewer = new Autodesk.Viewing.GuiViewer3D(viewerContainer, config);
-      viewer.start(config);
+      viewer = new Autodesk.Viewing.GuiViewer3D(viewerContainer);
+      viewer.start();
+      viewer.loadExtension("BaseExtension");
       globalViewer = viewer;
 
       // TODO - Añadir la urn de un modelo subido a US
-      const urnArray = ['dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==',
-        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9Tbm93ZG9uJTIwVG93ZXJzJTIwU2FtcGxlJTIwSFZBQy5ydnQ=',
-        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9TaGVldFRlbXBsYXRlLnJ2dA=='
-      ]
-      const documentId = `urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==`;
-      urnArray.forEach((urn) => {
-        const documentId = `urn:${urn}`;
-        Autodesk.Viewing.Document.load(
-          documentId,
-          onDocumentLoadSuccess,
-          onDocumentLoadFailure
-        );
-      });
+      const documentId = `urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9Tbm93ZG9uJTIwVG93ZXJzJTIwU2FtcGxlJTIwSFZBQy5ydnQ=`;
+      Autodesk.Viewing.Document.load(
+        documentId,
+        onDocumentLoadSuccess,
+        onDocumentLoadFailure
+      );
     });
+
+    const loadBaseExtension = () => {
+      class BaseExtension extends window.Autodesk.Viewing.Extension {
+        constructor(viewer, options) {
+          super(viewer, options);
+        }
+
+        load() {
+          console.log("BaseExtension loaded");
+          return true;
+        }
+
+        unload() {
+          console.log("BaseExtension unloaded");
+          return true;
+        }
+      }
+
+      window.Autodesk.Viewing.theExtensionManager.registerExtension(
+        "BaseExtension",
+        BaseExtension
+      );
+    };
 
     const onDocumentLoadSuccess = (doc) => {
       console.log(
@@ -85,8 +99,149 @@ onMounted(() => {
   };
 });
 
-</script>
+const createBaseExtension = () => {
+  class BaseExtension extends window.Autodesk.Viewing.Extension {
+    constructor(viewer, options) {
+      super(viewer, options);
+      this._onObjectTreeCreated = (ev) => this.onModelLoaded(ev.model);
+      this._onSelectionChanged = (ev) =>
+        this.onSelectionChanged(ev.model, ev.dbIdArray);
+      this._onIsolationChanged = (ev) =>
+        this.onIsolationChanged(ev.model, ev.nodeIdArray);
+    }
 
+    load() {
+      this.viewer.addEventListener(
+        Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT,
+        this._onObjectTreeCreated
+      );
+      this.viewer.addEventListener(
+        Autodesk.Viewing.SELECTION_CHANGED_EVENT,
+        this._onSelectionChanged
+      );
+      this.viewer.addEventListener(
+        Autodesk.Viewing.ISOLATE_EVENT,
+        this._onIsolationChanged
+      );
+      console.log("BaseExtension loaded");
+      return true;
+    }
+
+    unload() {
+      this.viewer.removeEventListener(
+        Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT,
+        this._onObjectTreeCreated
+      );
+      this.viewer.removeEventListener(
+        Autodesk.Viewing.SELECTION_CHANGED_EVENT,
+        this._onSelectionChanged
+      );
+      this.viewer.removeEventListener(
+        Autodesk.Viewing.ISOLATE_EVENT,
+        this._onIsolationChanged
+      );
+      console.log("BaseExtension unloaded");
+      return true;
+    }
+    async onModelLoaded(model) {
+      globalModel = model;
+      const tree = await this.getModelStructure(model);
+      // Eliminamos el botón para acceder al object tree propio del visor de APS
+      this.viewer.toolbar
+        .getControl("settingsTools")
+        .removeControl("toolbar-modelStructureTool");
+    }
+
+    async getModelStructure(model) {
+      return new Promise((resolve, reject) => {
+        model.getObjectTree((tree) => {
+          const buildStructure = (nodeId) => {
+            const node = {
+              objectid: nodeId,
+              name: tree.getNodeName(nodeId),
+              objects: [],
+            };
+            tree.enumNodeChildren(nodeId, (childId) => {
+              const childNode = buildStructure(childId);
+              if (tree.getChildCount(childId) > 0) {
+                tree.enumNodeChildren(childId, (grandChildId) => {
+                  childNode.objects.push(buildStructure(grandChildId));
+                });
+              }
+              node.objects.push(childNode);
+            });
+            return node;
+          };
+          const rootId = tree.getRootId();
+          const structure = buildStructure(rootId);
+          resolve(structure);
+        }, reject);
+      });
+    }
+    onSelectionChanged(model, dbids) {
+      if (dbids.length === 0) {
+        this.viewer.clearSelection();
+      } else {
+        this.viewer.select(dbids);
+      }
+    }
+
+    onIsolationChanged(model, dbids) {
+      if (dbids.length === 0) {
+        this.viewer.clearSelection();
+      } else {
+        this.viewer.isolate(dbids);
+      }
+    }
+
+    removeFirstPersonButton() {
+      this.viewer.toolbar
+        .getControl("navTools")
+        .removeControl("toolbar-bimWalkTool");
+    }
+
+    selectDbId(dbid) {
+      globalModel.getObjectTree(
+        (tree) => {
+          const dbidsToSelect = [dbid];
+          tree.enumNodeChildren(
+            dbid,
+            (childId) => {
+              dbidsToSelect.push(childId);
+            },
+            true
+          );
+          this.viewer.select(dbidsToSelect);
+          this.viewer.fitToView(dbidsToSelect, this.viewer.model);
+          dbidsToSelect.forEach((id) => {
+            this.viewer.impl.highlightObjectNode(globalModel, id, true);
+          });
+        },
+        (error) => {
+          console.error("Error retrieving object tree:", error);
+        }
+      );
+    }
+  }
+
+  window.Autodesk.Viewing.theExtensionManager.registerExtension(
+    "BaseExtension",
+    BaseExtension
+  );
+};
+
+</script>
 <template>
-  <div id="viewer-container" />
+  <div id="viewer-container" class="viewer-container" />
 </template>
+
+<style scoped>
+.viewer-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 250px;
+  right: 0;
+  overflow: hidden;
+}
+</style>
