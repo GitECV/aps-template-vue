@@ -49,9 +49,9 @@ onMounted(() => {
       globalViewer = viewer;
 
       // TODO - Añadir la urn de un modelo subido a US
-      const urnArray = ['dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==',
-        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9Tbm93ZG9uK1Rvd2VycytTYW1wbGUrSFZBQy5ydnQ=',
-        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9Tbm93ZG9uK1Rvd2VycytTYW1wbGUrRWxlY3RyaWNhbC5ydnQ='
+      const urnArray = ['dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==',
+        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9Tbm93ZG9uJTIwVG93ZXJzJTIwU2FtcGxlJTIwSFZBQy5ydnQ=',
+        'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6ZHpremtwdnR0ZGJtZzRhaG5nZDhua2drZ21heGNteWFia3dva3d0am40dXd5OW53LWJhc2ljLWFwcC9TaGVldFRlbXBsYXRlLnJ2dA=='
       ]
       const documentId = `urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHJ1ZWJpdGFzLjRhNTE3YWJhLWU1MmItNGFlZC1hYWI3LTMzYzc3OTE5NzdmZC9TdGFpclNhbXBsZXMoMTExMTEpLnJ2dA==`;
       urnArray.forEach((urn) => {
