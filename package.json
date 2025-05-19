@@ -10,6 +10,9 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@aps_sdk/authentication": "^1.0.0",
+    "@aps_sdk/model-derivative": "^1.1.0",
+    "@aps_sdk/oss": "^1.1.1",
     "nuxt": "^3.16.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
